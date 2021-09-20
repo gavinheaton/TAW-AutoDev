@@ -12,12 +12,27 @@
 	v5	Add smart fields to wp-forms and remove Logout button from v1
 	v6  Horizontal display of childpages
 	v7  Front end form
-	v8  Announcements ticker 
+	v8  Announcements ticker
 	v9  Custom fields re-enabled with ACF plugin
 	v10 Change the shape of the team page icons
 	v11 Add Custom Fields for TAW Communicator
-		
+	v12 Add dashboard widget
+
 */
+
+/* v12 - Dashboard widget */
+// Register the function
+function TAW_dashboard_widget() {
+	wp_add_dashboard_widget('TAW_widget','TheAir.Works', 'TAW_widget_display');
+}
+// Add the action
+add_action( 'wp_dashboard_setup', 'TAW_dashboard_widget' );
+
+function TAW_widget_display() {
+	$themeDir = get_site_url();
+    echo '<img width="300px" src="'.$themeDir.'/wp-content/themes/divi-child/images/TAW-2021.png"><p>Welcome to TheAir.Works.<p>
+		<p>Version: 1.12</p>';
+}
 
 /* v11 - Advanced Custom Fields for TAW Communicator */
 if( function_exists('acf_add_options_page') ) {
@@ -27,7 +42,7 @@ if( function_exists('acf_add_options_page') ) {
 		'menu_slug' 	=> 'taw-hack',
 		'capability'	=> 'edit_posts',
 		'redirect'		=> false
-	));	
+	));
 }
 
 
@@ -53,7 +68,7 @@ add_filter( 'wp_insert_post_data', 'greenroom_comments_off' );
 
 
 
-function my_theme_enqueue_styles() { 
+function my_theme_enqueue_styles() {
     wp_enqueue_style( 'parent-style', get_template_directory_uri() . '/style.css' );
 }
 add_action( 'wp_enqueue_scripts', 'my_theme_enqueue_styles' );
@@ -93,7 +108,7 @@ array(
 'edit_others_posts' => false, // Allows user to edit others posts not just their own
 'create_posts' => false, // Allows user to create new posts
 'create_resources' => true, // Allows user to create new Resources pages
-'create_teampages' => true, // Allows user to create new Resources pages	
+'create_teampages' => true, // Allows user to create new Resources pages
 'manage_categories' => false, // Allows user to manage post categories
 'publish_posts' => false, // Allows the user to publish, otherwise posts stays in draft mode
 'edit_themes' => false, // false denies this capability. User can’t edit your theme
@@ -129,8 +144,8 @@ function my_custom_menu_item($items) {
 }
 /* v4 - end */
 
-function ihack_list_child_pages($atts) { 
- 
+function ihack_list_child_pages($atts) {
+
   $atts = shortcode_atts(array(
     'page' => false,
     'remove' => '',
@@ -140,13 +155,13 @@ function ihack_list_child_pages($atts) {
     'exclude' => false,
     'number' => false,
   ), $atts);
- 
+
     global $post;
     $page = ($atts['page'] !== false) ? $atts['page'] : $post->ID;
- 
+
     /* Excluded posts */
     $exclude = ($atts['exclude'] != false) ? $exclude = explode(',', $atts['exclude']) : array();
- 
+
     $args = array(
         'post_parent' => $page,
 //        'post_type' => 'page',
@@ -155,20 +170,20 @@ function ihack_list_child_pages($atts) {
 		'orderby' => 'post_title',
     	'order' => 'ASC',
     );
- 
+
     /* Limit number of posts? (for pagination purposes) */
     $args['posts_per_page'] = ($atts['number'] !== false) ? $atts['number'] : '-1';
- 
+
     $subpages = new WP_query($args);
     add_image_size( 'custom-size', 150, 75 );
-     
+
     /* Build list of pages */
     if ($subpages->have_posts()) :
- 
+
         $output = '<ul>';
- 
+
         while ($subpages->have_posts()) : $subpages->the_post();
- 
+
             if ( ($atts['remove'] != '') && ($atts['description']) ) $excerpt = trim(str_replace($atts['remove'], '', get_the_excerpt()));
             if ( ($atts['words'] !== false) && ($atts['description']) ) $excerpt = wp_trim_words($excerpt, $num_words = $atts['words'], $more = null );
             $output .= '<div class="teamContainer"><a class="teamName" href="' . get_permalink() .'">' . get_the_post_thumbnail($post_id,'custom-size',array(320,180)). '<div class="teamTitle">' . get_the_title() .'</div></a>';
@@ -177,23 +192,23 @@ function ihack_list_child_pages($atts) {
  		// ($post_id,array(100,100))
         endwhile;
         $output .= '</div>';
- 
+
        /* Reset query */
        wp_reset_postdata();
- 
+
     else :
- 
+
         $output = '<p>No team pages found.</p>';
- 
+
     endif;
- 
+
  return $output;
 }
 add_shortcode('ihack_childpages', 'ihack_list_child_pages');
 
 /* v6 horizontal child page grid */
-function ihack_horizontal($atts) { 
- 
+function ihack_horizontal($atts) {
+
   $atts = shortcode_atts(array(
     'page' => false,
     'remove' => '',
@@ -203,13 +218,13 @@ function ihack_horizontal($atts) {
     'exclude' => false,
     'number' => false,
   ), $atts);
- 
+
     global $post;
     $page = ($atts['page'] !== false) ? $atts['page'] : $post->ID;
- 
+
     /* Excluded posts */
     $exclude = ($atts['exclude'] != false) ? $exclude = explode(',', $atts['exclude']) : array();
- 
+
     $args = array(
         'post_parent' => $page,
 //      'post_type' => 'page',
@@ -218,19 +233,19 @@ function ihack_horizontal($atts) {
 		'orderby' => 'post_title',
     	'order' => 'ASC',
     );
- 
+
     /* Limit number of posts? (for pagination purposes) */
     $args['posts_per_page'] = ($atts['number'] !== false) ? $atts['number'] : '-1';
- 
+
     $subpages = new WP_query($args);
-     
+
     /* Build list of pages */
     if ($subpages->have_posts()) :
- 
+
         $output = '<div class="ihackHorizontal">';
- 
+
         while ($subpages->have_posts()) : $subpages->the_post();
- 
+
             if ( ($atts['remove'] != '') && ($atts['description']) ) $excerpt = trim(str_replace($atts['remove'], '', get_the_excerpt()));
             if ( ($atts['words'] !== false) && ($atts['description']) ) $excerpt = wp_trim_words($excerpt, $num_words = $atts['words'], $more = null );
             $output .= '<div id="displayContainer"><a href="' . get_permalink() .'">' . get_the_post_thumbnail($post_id,'thumbnail'). '</a><p class="teamTitle">' . get_the_title() .'</p>';
@@ -239,16 +254,16 @@ function ihack_horizontal($atts) {
  		// ($post_id,array(100,100))
         endwhile;
         $output .= '</div>';
- 
+
        /* Reset query */
        wp_reset_postdata();
- 
+
     else :
- 
+
         $output = '<p>No team pages found.</p>';
- 
+
     endif;
- 
+
  return $output;
 }
 add_shortcode('ihack_horizontal', 'ihack_horizontal');
@@ -277,34 +292,11 @@ add_shortcode('ihack_parent', 'wps_parent_post');
 
 /* Disable Admin bar for all but Admins */
 add_action('after_setup_theme', 'remove_admin_bar');
- 
+
 function remove_admin_bar() {
 if (!current_user_can('administrator') && !is_admin()) {
   show_admin_bar(false);
 }
-}
-
-/* Add logout button to menu 
-add_filter('wp_nav_menu_items', 'add_login_logout_link', 10, 2);
-function add_login_logout_link($items, $args) {
-        ob_start();
-        wp_loginout('index.php');
-        $loginoutlink = ob_get_contents();
-        ob_end_clean();
-        $items .= '<li>'. $loginoutlink .'</li>';
-    return $items;
-}
-*/
-
-/* Admin widget for iHackOnline */
-add_action('wp_dashboard_setup', 'my_custom_dashboard_widgets');
-function my_custom_dashboard_widgets() {
-global $wp_meta_boxes;
-wp_add_dashboard_widget('custom_widget', 'iHackOnline', 'custom_dashboard_information');
-}
-function custom_dashboard_information() {
-	echo '<img width="300px" src="https://demo.ihackonline.com/wp-content/uploads/2020/03/Primary_iHack_RGB.png">';
-	echo '<p>Welcome to iHackOnline by Disruptors Co - the easiest way to meet and collaborate online.</p><p>For support email gavin@disruptorsco.com.</p>';
 }
 
 /**
@@ -327,25 +319,8 @@ function wpf_dev_checkbox_choices_process_smarttags( $field, $deprecated, $form_
 }
 add_filter( 'wpforms_checkbox_field_display', 'wpf_dev_checkbox_choices_process_smarttags', 10, 3 );
 
-/**
- * Custom shortcode to display WPForms form entries.
- *
- * Basic usage: [wpforms_entries_table id="FORMID"].
- * 
- * Possible shortcode attributes:
- * id (required)  Form ID of which to show entries.
- * user           User ID, or "current" to default to current logged in user.
- * fields         Comma seperated list of form field IDs.
- * number         Number of entries to show, defaults to 30.
- * 
- * @link https://wpforms.com/developers/how-to-display-form-entries/
- *
- * @param array $atts Shortcode attributes.
- * 
- * @return string
- */
 function wpf_entries_table( $atts ) {
- 
+
     // Pull ID shortcode attributes.
     $atts = shortcode_atts(
         [
@@ -356,27 +331,27 @@ function wpf_entries_table( $atts ) {
         ],
         $atts
     );
- 
+
     // Check for an ID attribute (required) and that WPForms is in fact
     // installed and activated.
     if ( empty( $atts['id'] ) || ! function_exists( 'wpforms' ) ) {
         return;
     }
- 
+
     // Get the form, from the ID provided in the shortcode.
     $form = wpforms()->form->get( absint( $atts['id'] ) );
- 
+
     // If the form doesn't exists, abort.
     if ( empty( $form ) ) {
         return;
     }
- 
+
     // Pull and format the form data out of the form object.
     $form_data = ! empty( $form->post_content ) ? wpforms_decode( $form->post_content ) : '';
- 
+
     // Check to see if we are showing all allowed fields, or only specific ones.
     $form_field_ids = ! empty( $atts['fields'] ) ? explode( ',', str_replace( ' ', '', $atts['fields'] ) ) : [];
- 
+
     // Setup the form fields.
     if ( empty( $form_field_ids ) ) {
         $form_fields = $form_data['fields'];
@@ -388,26 +363,26 @@ function wpf_entries_table( $atts ) {
             }
         }
     }
- 
+
     if ( empty( $form_fields ) ) {
         return;
     }
- 
+
     // Here we define what the types of form fields we do NOT want to include,
     // instead they should be ignored entirely.
     $form_fields_disallow = apply_filters( 'wpforms_frontend_entries_table_disallow', [ 'divider', 'html', 'pagebreak', 'captcha' ] );
- 
+
     // Loop through all form fields and remove any field types not allowed.
     foreach ( $form_fields as $field_id => $form_field ) {
         if ( in_array( $form_field['type'], $form_fields_disallow, true ) ) {
             unset( $form_fields[ $field_id ] );
         }
     }
- 
+
     $entries_args = [
         'form_id' => absint( $atts['id'] ),
     ];
- 
+
     // Narrow entries by user if user_id shortcode attribute was used.
     if ( ! empty( $atts['user'] ) ) {
         if ( $atts['user'] === 'current' && is_user_logged_in() ) {
@@ -416,76 +391,76 @@ function wpf_entries_table( $atts ) {
             $entries_args['user_id'] = absint( $atts['user'] );
         }
     }
- 
+
     // Number of entries to show. If empty, defaults to 30.
     if ( ! empty( $atts['number'] ) ) {
         $entries_args['number'] = absint( $atts['number'] );
     }
- 
+
     // Get all entries for the form, according to arguments defined.
     // There are many options available to query entries. To see more, check out
     // the get_entries() function inside class-entry.php (https://a.cl.ly/bLuGnkGx).
     $entries = wpforms()->entry->get_entries( $entries_args );
- 
+
     if ( empty( $entries ) ) {
         return '<p>No entries found.</p>';
     }
- 
+
     ob_start();
- 
+
     echo '<table class="wpforms-frontend-entries">';
- 
+
         echo '<thead><tr>';
- 
+
             // Loop through the form data so we can output form field names in
             // the table header.
             foreach ( $form_fields as $form_field ) {
- 
+
                 // Output the form field name/label.
                 echo '<th>';
                     echo esc_html( sanitize_text_field( $form_field['label'] ) );
                 echo '</th>';
             }
- 
+
         echo '</tr></thead>';
- 
+
         echo '<tbody>';
- 
+
             // Now, loop through all the form entries.
             foreach ( $entries as $entry ) {
- 
+
                 echo '<tr>';
- 
+
                 // Entry field values are in JSON, so we need to decode.
                 $entry_fields = json_decode( $entry->fields, true );
- 
+
                 foreach ( $form_fields as $form_field ) {
- 
+
                     echo '<td>';
- 
+
                         foreach ( $entry_fields as $entry_field ) {
                             if ( absint( $entry_field['id'] ) === absint( $form_field['id'] ) ) {
                                 echo apply_filters( 'wpforms_html_field_value', wp_strip_all_tags( $entry_field['value'] ), $entry_field, $form_data, 'entry-frontend-table' );
                                 break;
                             }
                         }
- 
+
                     echo '</td>';
                 }
- 
+
                 echo '</tr>';
             }
- 
+
         echo '</tbody>';
- 
+
     echo '</table>';
- 
+
     $output = ob_get_clean();
- 
+
     return $output;
 }
 add_shortcode( 'wpforms_entries_table', 'wpf_entries_table' );
-	
+
 // v8 - actions for handling announcements shortcodes
 
 add_action( 'init', create_function('',  'register_shortcode_ajax( "airworks_announcement", "airworks_announcement" ); '));
@@ -503,33 +478,6 @@ function myplugin_ajaxurl() {
            var ajaxurl = "' . admin_url('admin-ajax.php') . '";
          </script>';
 }
-
-/*
-function airworks_announcement() {
-	
-	$id=$_POST['post_id'];
-	var_dump($id);
-    //var_dump(get_post_type($post_ID));
-	$tawTicker = get_post_meta($id, 'tawTicker', true);
-    $tickerOutput = var_dump($tawTicker);
-	echo $tickerOutput;
-	echo do_shortcode( $tickerOutput );
-	
-	$file_id  = get_post_meta( get_the_ID(), 'tawTicker', true );
- 	global $wp_query;
-    $page_id = $wp_query->get_queried_object_id();
-	return $wp_query->get_queried_object_id();
-	echo $page_id;
-	echo ('<p>This is the code:');
-	echo (get_the_ID());
-	echo (' ... if only.</p>');
-	echo do_shortcode( $file_id );
-	
-	// The AirDemo - 4717
-	//echo do_shortcode( '[jquery_latest_news_ticker postid="4717"]' );
-    die(); 
-	}
-	*/
 
 // v9 - Custom fields re-enabled with ACF plugin
 add_filter('acf/settings/remove_wp_meta_box', '__return_false');

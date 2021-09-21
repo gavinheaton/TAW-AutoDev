@@ -145,7 +145,7 @@ function my_custom_menu_item($items) {
 /* v4 - end */
 
 function ihack_list_child_pages($atts) {
-
+	$post_id = get_the_ID();
   $atts = shortcode_atts(array(
     'page' => false,
     'remove' => '',
@@ -164,11 +164,10 @@ function ihack_list_child_pages($atts) {
 
     $args = array(
         'post_parent' => $page,
-//        'post_type' => 'page',
-		'post_type' => 'any',
+				'post_type' => 'any',
         'post__not_in' => $exclude,
-		'orderby' => 'post_title',
-    	'order' => 'ASC',
+				'orderby' => 'post_title',
+				'order' => 'ASC',
     );
 
     /* Limit number of posts? (for pagination purposes) */
@@ -460,24 +459,6 @@ function wpf_entries_table( $atts ) {
     return $output;
 }
 add_shortcode( 'wpforms_entries_table', 'wpf_entries_table' );
-
-// v8 - actions for handling announcements shortcodes
-
-add_action( 'init', create_function('',  'register_shortcode_ajax( "airworks_announcement", "airworks_announcement" ); '));
-
-function register_shortcode_ajax( $callable, $action ) {
-    if ( empty( $_POST['action'] ) || $_POST['action'] != $action )
-        return;
-    call_user_func( $callable );
-}
-
-// Make ajaxurl available to all plugins
-add_action('wp_head', 'myplugin_ajaxurl');
-function myplugin_ajaxurl() {
-    echo '<script type="text/javascript">
-           var ajaxurl = "' . admin_url('admin-ajax.php') . '";
-         </script>';
-}
 
 // v9 - Custom fields re-enabled with ACF plugin
 add_filter('acf/settings/remove_wp_meta_box', '__return_false');

@@ -19,6 +19,67 @@
 	v12 Add dashboard widget
 
 */
+/* v13 - Incorporate TAW uploader plugin */
+
+// First add TAW Menu items
+add_action( 'admin_menu', 'TAW_admin_menu' );
+
+function TAW_admin_menu() {
+	add_menu_page( 'TheAir.Works',
+'TheAir.Works', 'manage_options',
+'TAW_admin', 'taw_admin_content',
+'dashicons-rss', '3' );
+
+add_submenu_page( 'TAW_admin',
+'TheAir.Works - File Uploads',
+'File Uploads',
+'manage_options',
+'TAW_file_uploads',
+'TAW_admin_uploader' );
+}
+
+// Load custom css for the Admin page
+function load_custom_wp_admin_style($hook) {
+  if( $hook != 'toplevel_page_TAW_file_uploads' ) {
+     return;
+  }
+  //wp_enqueue_style( 'custom_wp_admin_css', plugins_url('/admin-style.css', __FILE__) );
+	wp_enqueue_style( 'custom_wp_admin_css', get_stylesheet_directory_uri() . '/admin-style.css');
+}
+add_action( 'admin_enqueue_scripts', 'load_custom_wp_admin_style' );
+
+function taw_admin_content() {
+	if ( !current_user_can( 'manage_options' ) )  {
+		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+	}
+	wp_enqueue_style( 'custom_wp_admin_css', get_stylesheet_directory_uri() . '/admin-style.css');
+	echo '<div class="wrap">';
+	echo '
+	<h1>TheAir.Works - Administration</h1>
+  <h6>Version: 1.1</h6>
+  <p>Uploader.</p>';
+}
+
+function taw_admin_uploader() {
+	if ( !current_user_can( 'manage_options' ) )  {
+		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+	}
+	wp_enqueue_style( 'custom_wp_admin_css', get_stylesheet_directory_uri() . '/admin-style.css');
+	echo '<div class="wrap">';
+	echo '<h1>TheAir.Works - Uploader</h1>';
+	echo '
+	<h6>Version: 1.1</h6>
+	<p>Enable the file uploader by using the <strong>[taw_upload_shortcode]</strong> shortcode on any page.</p>';
+	// Get upload directory information
+	$upload_dir = wp_upload_dir();
+	$folder = $upload_dir['basedir'].'/uploader';
+	echo "<p>By default, files are uploaded to <strong>{$folder}</strong>.</p>
+	<table class='widefat'><thead><tr><th style='width: 120px;'>Folder</th><th>Filename</th><th>Download</th></tr></thead>";
+	get_all_directory_and_files($folder);
+	echo "</table>";
+}
+
+require_once("uploader/uploader.php");
 
 /* v12 - Dashboard widget */
 // Register the function
@@ -73,12 +134,9 @@ function my_theme_enqueue_styles() {
 }
 add_action( 'wp_enqueue_scripts', 'my_theme_enqueue_styles' );
 
-/* User roles for iHackOnline */
+/* User roles for TheAir.Works */
 
-$result = add_role( 'hacker', __(
-
-'Hacker' ),
-
+$result = add_role( 'hacker', __('Hacker' ),
 array(
 
 'read' => true, // true allows this capability
@@ -94,10 +152,8 @@ array(
 'update_core' => false // user cant perform core updates
 )
 );
-$result = add_role( 'hackcoordinator', __(
 
-'Hack Coordinator' ),
-
+$result = add_role( 'hackcoordinator', __('Hack Coordinator' ),
 array(
 
 'read' => true, // true allows this capability
@@ -145,6 +201,7 @@ function my_custom_menu_item($items) {
 /* v4 - end */
 
 function ihack_list_child_pages($atts) {
+	// add Teams child pages via the shortcode
 	$post_id = get_the_ID();
   $atts = shortcode_atts(array(
     'page' => false,

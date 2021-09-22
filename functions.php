@@ -17,8 +17,26 @@
 	v10 Change the shape of the team page icons
 	v11 Add Custom Fields for TAW Communicator
 	v12 Add dashboard widget
+	v1.13 Incorporate TAW uploader plugins
+	v1.14
 
 */
+/* v1.14 - Customise the login pages - used for SSO */
+function my_login_logo() { ?>
+    <style type="text/css">
+        #login h1 a, .login h1 a {
+            background-image: url(<?php echo get_stylesheet_directory_uri(); ?>/images/TAW-2021.png);
+		height:65px;
+		width:65px;
+		background-size: 320px 65px;
+		background-repeat: no-repeat;
+        	padding-bottom: 30px;
+        }
+    </style>
+<?php }
+add_action( 'login_enqueue_scripts', 'my_login_logo' );
+
+
 /* v13 - Incorporate TAW uploader plugin */
 
 // First add TAW Menu items

@@ -21,6 +21,28 @@
 	v1.14
 
 */
+/* v12 - Dashboard widget */
+// Register the function - this should be updated for every release
+function TAW_dashboard_widget() {
+	wp_add_dashboard_widget('TAW_widget','TheAir.Works', 'TAW_widget_display');
+}
+// Add the action
+add_action( 'wp_dashboard_setup', 'TAW_dashboard_widget' );
+
+function TAW_widget_display() {
+	$themeDir = get_site_url();
+    echo '<img width="300px" src="'.$themeDir.'/wp-content/themes/divi-child/images/TAW-2021.png"><p>Welcome to TheAir.Works.<p>
+		<p>Version: 1.13</p>';
+}
+
+// Set global variables
+global $TAWreferralSlug;
+global $TAWtheDir;
+global $TAWupload_dir;
+global $TAWserverName;
+
+$TAWserverName = get_site_url();
+
 /* v1.14 - Customise the login pages - used for SSO */
 function my_login_logo() { ?>
     <style type="text/css">
@@ -93,25 +115,39 @@ function taw_admin_uploader() {
 	$folder = $upload_dir['basedir'].'/uploader';
 	echo "<p>By default, files are uploaded to <strong>{$folder}</strong>.</p>
 	<table class='widefat'><thead><tr><th style='width: 120px;'>Folder</th><th>Filename</th><th>Download</th></tr></thead>";
-	get_all_directory_and_files($folder);
+	//get_all_directory_and_files($folder);
+  // Front end downloader
+  $iterator = new DirectoryIterator($folder);
+  foreach ($iterator as $dirInfo) {
+      if (!$dirInfo->isDot()) {
+        if ($dirInfo->isDir()){
+          $directoryName = $dirInfo->getFilename();
+        } else {
+          $directoryName = "NA";
+        }
+        echo "<tr><td><strong>{$directoryName}</strong></td><td>";
+        $fileTarget = $folder . "/";
+        $fileIterator = new DirectoryIterator($fileTarget);
+        foreach ($fileIterator as $fileinfo){
+          if ($fileinfo->isFile()){
+            $fileN = $fileinfo->getFilename();
+            echo "{$fileN}</br>";
+          }
+        }
+        // create the row - adding the name of the folder to the button name so that it's easier to zip the folder for downloading
+        echo "</td><td><form method='post' id='{$directoryName}'> <input type='submit' value='Download' name='{$directoryName}' class='button button1'></form></td></tr>";
+        if(isset($_POST[$directoryName])) {
+            echo "{$directoryName} was selected";
+            $upload_dir = wp_upload_dir();
+            $folder = $upload_dir['basedir'] . '/uploader/' . $directoryName .'/';
+            fileZipper($folder);
+        }
+
+    }
+  }
 	echo "</table>";
 }
-
 require_once("uploader/uploader.php");
-
-/* v12 - Dashboard widget */
-// Register the function
-function TAW_dashboard_widget() {
-	wp_add_dashboard_widget('TAW_widget','TheAir.Works', 'TAW_widget_display');
-}
-// Add the action
-add_action( 'wp_dashboard_setup', 'TAW_dashboard_widget' );
-
-function TAW_widget_display() {
-	$themeDir = get_site_url();
-    echo '<img width="300px" src="'.$themeDir.'/wp-content/themes/divi-child/images/TAW-2021.png"><p>Welcome to TheAir.Works.<p>
-		<p>Version: 1.12</p>';
-}
 
 /* v11 - Advanced Custom Fields for TAW Communicator */
 if( function_exists('acf_add_options_page') ) {
